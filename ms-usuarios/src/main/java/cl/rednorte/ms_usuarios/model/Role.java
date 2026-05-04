@@ -1,4 +1,4 @@
 package cl.rednorte.ms_usuarios.model;
 
-public class HumanName {
+public class Role {
 }

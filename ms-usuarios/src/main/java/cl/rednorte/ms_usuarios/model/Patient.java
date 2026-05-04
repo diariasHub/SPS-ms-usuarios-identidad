@@ -21,16 +21,21 @@ public class Patient {
     @Column(name = "patient_id", nullable = false,length = 10)
     private int PatientId;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @Column(name = "name_patient")
-    HumanName name;
+    @Column(name = "run_patient", nullable = false, length = 12)
+    private String runPatient;
+
+    @Column(name = "first_name_patient", nullable = true, length = 100)
+    private String firstNamePatient;
+
+    @Column(name = "last_name_patient", nullable = true, length = 100)
+    private String lastNamePatient;
 
     @Column(name = "activate", nullable = false)
     private boolean activate;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @Column(name = "telecom", nullable = false)
-    private List<ContactPoint> contactPoints;
+    @Column(name = "telecom", nullable = true)
+    private List<ContactPoint> contactPointsPatient;
 
     @Column(name = "gender_patient", nullable = false, length = 1)
     private String gender;
@@ -46,13 +51,8 @@ public class Patient {
     @Column(name = "address_patient", nullable = true)
     private List<Address> addresses;
 
-    @Column(name = "marital_status", nullable = true, length = 1)
-    private String maritalStatus;
-
-
-    @Column(name = "contact", nullable = true)
-
-
+    @Column(name = "nationality_patient", nullable = true, length = 150)
+    private String nationalityPatient;
 
 
 
