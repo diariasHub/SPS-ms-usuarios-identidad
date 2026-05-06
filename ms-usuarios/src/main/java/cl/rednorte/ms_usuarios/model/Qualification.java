@@ -1,16 +1,20 @@
 package cl.rednorte.ms_usuarios.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.sql.Timestamp;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "qualifications")
 public class Qualification {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "qualification_id", nullable = false, length = 100)
     private int qualification_id;
 

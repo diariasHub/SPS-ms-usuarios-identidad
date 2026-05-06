@@ -13,11 +13,13 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "practitioners")
 public class Practitioner {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "practitioner_id", nullable = false, length = 100)
     private int practitionerId;
 
@@ -25,7 +27,7 @@ public class Practitioner {
     private String runPractitioner;
 
     @Column (name = "active_practitioner" , nullable = false)
-    private boolean active;
+    private boolean activePractitioner;
 
     @Column (name = "first_name_practitioner", nullable = false, length = 200)
     private String firstNamePractitioner;

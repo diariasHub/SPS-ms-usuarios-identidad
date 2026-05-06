@@ -14,6 +14,8 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "patients")
 public class Patient {
 
     @Id
@@ -31,30 +33,28 @@ public class Patient {
     private String lastNamePatient;
 
     @Column(name = "activate", nullable = false)
-    private boolean activate;
+    private boolean activatePatient;
 
     @OneToMany(cascade = CascadeType.ALL)
     @Column(name = "telecom", nullable = true)
     private List<ContactPoint> contactPointsPatient;
 
     @Column(name = "gender_patient", nullable = false, length = 1)
-    private String gender;
+    private String genderPatient;
 
     @Column(name = "bithday_patient", nullable = true)
-    private Timestamp bithday;
+    private Timestamp bithdayPatient;
 
     @OneToOne(cascade = CascadeType.ALL)
     @Column(name = "deceased", nullable = false)
-    private Deceased deceased;
+    private Deceased deceasedPatient;
 
     @OneToMany(cascade = CascadeType.ALL)
     @Column(name = "address_patient", nullable = true)
-    private List<Address> addresses;
+    private List<Address> addressesPatient;
 
     @Column(name = "nationality_patient", nullable = true, length = 150)
     private String nationalityPatient;
-
-
 
 
 }
