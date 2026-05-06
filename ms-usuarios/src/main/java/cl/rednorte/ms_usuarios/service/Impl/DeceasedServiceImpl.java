@@ -2,7 +2,7 @@ package cl.rednorte.ms_usuarios.service.Impl;
 
 import cl.rednorte.ms_usuarios.dto.DeceasedDTO;
 import cl.rednorte.ms_usuarios.model.Deceased;
-import cl.rednorte.ms_usuarios.reposity.DeceasedRepository;
+import cl.rednorte.ms_usuarios.repository.DeceasedRepository;
 import cl.rednorte.ms_usuarios.service.DeceasedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

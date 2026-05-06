@@ -2,7 +2,7 @@ package cl.rednorte.ms_usuarios.service.Impl;
 
 import cl.rednorte.ms_usuarios.dto.PatientDTO;
 import cl.rednorte.ms_usuarios.model.Patient;
-import cl.rednorte.ms_usuarios.reposity.PatientRepository;
+import cl.rednorte.ms_usuarios.repository.PatientRepository;
 import cl.rednorte.ms_usuarios.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

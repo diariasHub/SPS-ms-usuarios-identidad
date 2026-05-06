@@ -2,7 +2,7 @@ package cl.rednorte.ms_usuarios.service.Impl;
 
 import cl.rednorte.ms_usuarios.dto.*;
 import cl.rednorte.ms_usuarios.model.*;
-import cl.rednorte.ms_usuarios.reposity.PractitionerRepository;
+import cl.rednorte.ms_usuarios.repository.PractitionerRepository;
 import cl.rednorte.ms_usuarios.service.PractitionerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
