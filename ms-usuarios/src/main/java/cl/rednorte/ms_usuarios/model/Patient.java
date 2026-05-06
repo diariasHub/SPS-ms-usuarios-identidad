@@ -36,7 +36,7 @@ public class Patient {
     private boolean activatePatient;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @Column(name = "telecom", nullable = true)
+    @JoinColumn(name = "patient_id")
     private List<ContactPoint> contactPointsPatient;
 
     @Column(name = "gender_patient", nullable = false, length = 1)
@@ -46,11 +46,11 @@ public class Patient {
     private Timestamp bithdayPatient;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @Column(name = "deceased", nullable = false)
+    @JoinColumn(name = "deceased_id")
     private Deceased deceasedPatient;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @Column(name = "address_patient", nullable = true)
+    @JoinColumn(name = "patient_id")
     private List<Address> addressesPatient;
 
     @Column(name = "nationality_patient", nullable = true, length = 150)

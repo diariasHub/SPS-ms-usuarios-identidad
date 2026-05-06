@@ -44,19 +44,20 @@ public class Practitioner {
     @Column (name = "birthday_practitioner", nullable = false )
     private Timestamp birthdayPractitioner;
 
-    @Column (name = "contact_practitioner", nullable = false)
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "practitioner_id")
     private List<ContactPoint> contactPointsPractitioner;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @Column(name = "deceased", nullable = false)
+    @JoinColumn(name = "deceased_id")
     private Deceased deceasedPractitioner;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @Column (name = "address_practitioner", nullable = false)
+    @JoinColumn(name = "practitioner_id")
     private List<Address> addressesPractitioner;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @Column (name = "qualification_practitioner",nullable = false)
+    @JoinColumn(name = "practitioner_id")
     private List <Qualification> qualificationsPractitioner;
 
 
