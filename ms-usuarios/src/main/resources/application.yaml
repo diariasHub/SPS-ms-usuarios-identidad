@@ -1,3 +1,41 @@
 spring:
   application:
     name: ms-usuarios
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  jpa:
+    open-in-view: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+app:
+  security:
+    jwt:
+      issuer: ms-usuarios
+      access-token-ttl-minutes: 10
+      refresh-token-ttl-hours: 8
+    lockout:
+      max-attempts: 5
+      lock-minutes: 15
+    otp:
+      issuer: RedNorte-Urgencias
+      digits: 6
+      period-seconds: 30
+      allowed-discrepancy: 1
+
+logging:
+  level:
+    "[org.springframework.security]": INFO
+    "[cl.rednorte.ms_usuarios]": INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{jti:-}] %logger{36} - %msg%n"
