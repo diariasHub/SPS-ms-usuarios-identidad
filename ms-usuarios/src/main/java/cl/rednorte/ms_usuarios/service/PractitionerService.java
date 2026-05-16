@@ -9,6 +9,10 @@ public interface PractitionerService {
 
     Optional<PractitionerDTO> findById(int id);
 
+    List<PractitionerDTO> findByName(String name);
+
+    Optional<PractitionerDTO> findByRun(String run);
+
     PractitionerDTO save(PractitionerDTO practitionerDTO);
 
     PractitionerDTO update(int id, PractitionerDTO practitionerDTO);

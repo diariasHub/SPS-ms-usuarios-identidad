@@ -26,11 +26,27 @@ public class PractitionerController {
         return ResponseEntity.ok(practitionerService.findAll());
     }
 
-    @Operation(summary = "Buscar un especialista por su numero de ID", description = "Obtiene un especialisata buscando por el numero de id registrado")
+    @Operation(summary = "Buscar un especialista por su numero de ID", description = "Obtiene un especialista buscando por el numero de id registrado")
     @ApiResponse(responseCode = "200", description = "Especialista obtenido correctamente")
     @GetMapping("/{id}")
     public ResponseEntity<PractitionerDTO> findById(@PathVariable int id) {
         return ResponseEntity.ok(practitionerService.findById(id).orElse(null));
+    }
+
+    @Operation(summary = "Buscar un especialista por su RUN", description = "Obtiene un especialista por el RUN")
+    @ApiResponse(responseCode = "200", description = "Especialista encontrado")
+    @GetMapping("/run/{run}")
+    public ResponseEntity<PractitionerDTO> findByRun(@PathVariable String run) {
+        return practitionerService.findByRun(run)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Buscar especialistas por nombre", description = "Obtiene especialistas cuyo primer nombre coincida (parcial, case-insensitive)")
+    @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente")
+    @GetMapping("/name/{name}")
+    public ResponseEntity<List<PractitionerDTO>> findByName(@PathVariable String name) {
+        return ResponseEntity.ok(practitionerService.findByName(name));
     }
 
     @Operation(summary = "Crear un nuevo especialista", description = "Registra un nuevo especialista")

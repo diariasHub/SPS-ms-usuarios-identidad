@@ -1,0 +1,18 @@
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# System files
+Thumbs.db
+.DS_Store
+
+# Build artifacts (if any at root)
+target/
+build/
+out/
+
+# Log files
+*.log

@@ -32,6 +32,20 @@ public class PractitionerServiceImpl implements PractitionerService {
     }
 
     @Override
+    public List<PractitionerDTO> findByName(String name) {
+        return practitionerRepository.findByFirstNamePractitionerContainingIgnoreCase(name)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<PractitionerDTO> findByRun(String run) {
+        return practitionerRepository.findByRunPractitioner(run)
+                .map(this::convertToDTO);
+    }
+
+    @Override
     public PractitionerDTO save(PractitionerDTO practitionerDTO) {
         // Mapeo inverso si es necesario
         return null;
