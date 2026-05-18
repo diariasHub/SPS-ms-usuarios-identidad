@@ -3,9 +3,7 @@ package cl.rednorte.ms_usuarios.fhir.controller;
 import ca.uhn.fhir.context.FhirContext;
 import cl.rednorte.ms_usuarios.audit.model.AuditEventType;
 import cl.rednorte.ms_usuarios.audit.service.AuditService;
-import cl.rednorte.ms_usuarios.fhir.FhirMapper;
-import cl.rednorte.ms_usuarios.model.Patient;
-import cl.rednorte.ms_usuarios.repository.PatientRepository;
+import cl.rednorte.ms_usuarios.fhir.PatientFhirQueryService;
 import cl.rednorte.ms_usuarios.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,8 +29,7 @@ public class PatientFhirController {
 
     private static final String FHIR_JSON = "application/fhir+json";
 
-    private final PatientRepository patientRepository;
-    private final FhirMapper fhirMapper;
+    private final PatientFhirQueryService patientFhirQueryService;
     private final FhirContext fhirContext;
     private final AuditService auditService;
 
@@ -53,32 +50,18 @@ public class PatientFhirController {
                     "X-Break-Glass requiere X-Break-Glass-Reason no vacío");
         }
 
-        return patientRepository.findById(id)
-                .map(patient -> {
+        return patientFhirQueryService.findAsFhirJson(id)
+                .map(body -> {
                     auditService.recordResourceAccess(
                             breakGlass ? AuditEventType.BREAK_GLASS : AuditEventType.PATIENT_ACCESSED,
                             "Patient", String.valueOf(id),
                             breakGlass, reason, request);
-                    if (!breakGlass) {
-                        enforceAbac(patient, principal);
-                    }
-                    org.hl7.fhir.r4.model.Patient fhir = fhirMapper.toFhir(patient);
-                    String body = fhirContext.newJsonParser().encodeResourceToString(fhir);
                     return ResponseEntity.ok()
                             .contentType(MediaType.parseMediaType(FHIR_JSON))
                             .body(body);
                 })
                 .orElseGet(() -> fhirError(404, OperationOutcome.IssueType.NOTFOUND,
                         "Patient/" + id + " no encontrado"));
-    }
-
-    /**
-     * ABAC mínimo (iteración 1): solo aplica si NO es break-glass. Reservado
-     * para ampliar con reglas tipo "el médico solo ve pacientes asignados a su
-     * servicio". Hoy permite acceso a todos los pacientes a roles autorizados.
-     */
-    private void enforceAbac(Patient patient, CustomUserDetails principal) {
-        // Punto de extensión para reglas ABAC futuras.
     }
 
     private ResponseEntity<String> fhirError(int status, OperationOutcome.IssueType issueType, String diagnostics) {
