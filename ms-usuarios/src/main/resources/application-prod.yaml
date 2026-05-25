@@ -1,22 +1,31 @@
+# Perfil prod: la BD y el IdP vienen 100% por variables de entorno (convención
+# Spring nativa: SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD).
+# El compose orquestador define esas variables; aquí solo dejamos defaults
+# operativos (dialecto, pool, validación de esquema, JWK del IdP).
+
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/ms_usuarios}
     driver-class-name: org.postgresql.Driver
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
+      connection-timeout: 30000
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
   jpa:
     hibernate:
+      # Flyway crea/migra el esquema; Hibernate solo valida que las entidades coincidan.
       ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
 
-  # En prod la confianza del JWT se delega al IdP (Keycloak/Azure AD/Auth0).
-  # El MS solo valida tokens emitidos por ese issuer.
+  # Validación de tokens emitidos por el IdP (Keycloak / Azure AD / Auth0).
   security:
     oauth2:
       resourceserver:
@@ -25,10 +34,20 @@ spring:
           jwk-set-uri: ${IDP_JWK_SET_URI}
 
 app:
+  cors:
+    # En prod, lista en blanco bloquea todo cross-origin. Inyectar la lista
+    # real vía variable de entorno APP_CORS_ALLOWED_ORIGINS=https://app.rednorte.cl,...
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:}
   security:
+    rate-limit:
+      login-attempts: 10
+      otp-attempts: 10
+      window-seconds: 60
     jwt:
+      # En prod NO emitimos tokens propios — los emite el IdP.
       dev-keypair-enabled: false
 
 logging:
   level:
     "[cl.rednorte.ms_usuarios]": INFO
+    "[org.springframework.security]": INFO

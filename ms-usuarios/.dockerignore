@@ -1,0 +1,39 @@
+# Build outputs
+target/
+**/*.class
+*.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs y temporales
+*.log
+*.tmp
+
+# Documentación y reportes
+*.md
+docs/
+surefire-reports/
+
+# Tests (no necesarios en la build de producción; los corres en CI antes)
+# Si quieres correr tests dentro del contenedor, comenta esta línea.
+src/test/
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+docker-compose*.yaml

@@ -50,9 +50,11 @@ public class User {
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
-    // Link opcional al Practitioner asociado (cuando el usuario es médico/enfermera).
-    @Column(name = "practitioner_id")
-    private Integer practitionerId;
+    // Logical ID del recurso Practitioner asociado en el servidor HAPI FHIR central
+    // (cuando el usuario es médico/enfermera). NO es una FK local — el recurso vive
+    // fuera de este MS. Se usa para correlacionar audit logs y para llamadas FHIR.
+    @Column(name = "practitioner_fhir_id", length = 64)
+    private String practitionerFhirId;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

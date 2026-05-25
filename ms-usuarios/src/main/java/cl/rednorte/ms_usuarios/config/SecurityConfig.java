@@ -1,5 +1,9 @@
 package cl.rednorte.ms_usuarios.config;
 
+import ca.uhn.fhir.context.FhirContext;
+import cl.rednorte.ms_usuarios.auth.config.CorsProperties;
+import cl.rednorte.ms_usuarios.auth.config.SecurityProperties;
+import cl.rednorte.ms_usuarios.auth.security.RateLimitingFilter;
 import cl.rednorte.ms_usuarios.security.FhirAccessDeniedHandler;
 import cl.rednorte.ms_usuarios.security.FhirAuthenticationEntryPoint;
 import cl.rednorte.ms_usuarios.security.JwtAuthenticationFilter;
@@ -32,6 +36,8 @@ public class SecurityConfig {
     private final FhirAccessDeniedHandler accessDeniedHandler;
     private final ObjectProvider<JwtDecoder> jwtDecoderProvider;
     private final ObjectProvider<UserDetailsService> userDetailsServiceProvider;
+    private final SecurityProperties securityProperties;
+    private final FhirContext fhirContext;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,8 +56,20 @@ public class SecurityConfig {
                 .requestMatchers("/internal/**").hasRole(cl.rednorte.ms_usuarios.model.Role.INTEGRACION)
                 .anyRequest().authenticated()
             )
-            // H2 console usa frames
-            .headers(h -> h.frameOptions(f -> f.sameOrigin()));
+            .headers(h -> h
+                    // H2 console usa frames del mismo origen; en prod sin H2 no afecta.
+                    .frameOptions(f -> f.sameOrigin())
+                    .contentTypeOptions(c -> {}) // X-Content-Type-Options: nosniff
+                    .referrerPolicy(r -> r.policy(
+                            org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+                    .httpStrictTransportSecurity(hsts -> hsts
+                            .includeSubDomains(true)
+                            .maxAgeInSeconds(31_536_000)) // 1 año
+            );
+
+        // Rate limiting por IP en endpoints de autenticación (antes del filter chain de auth).
+        http.addFilterBefore(new RateLimitingFilter(securityProperties, fhirContext),
+                UsernamePasswordAuthenticationFilter.class);
 
         // El filtro JWT solo se enchufa si están disponibles los beans (perfil dev).
         JwtDecoder decoder = jwtDecoderProvider.getIfAvailable();
@@ -69,13 +87,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsFilter corsFilter() {
+    public CorsFilter corsFilter(CorsProperties corsProperties) {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
+        config.setAllowCredentials(corsProperties.isAllowCredentials());
+        config.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        config.setAllowedMethods(corsProperties.getAllowedMethods());
+        config.setAllowedHeaders(corsProperties.getAllowedHeaders());
+        config.setMaxAge(corsProperties.getMaxAgeSeconds());
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }

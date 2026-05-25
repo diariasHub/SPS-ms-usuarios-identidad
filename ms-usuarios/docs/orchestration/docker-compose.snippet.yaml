@@ -1,0 +1,122 @@
+# =========================================================================
+# Snippet de ajustes para tu docker-compose.yaml (en el repo orquestador).
+# NO es un compose completo: contiene SOLO los cambios sugeridos.
+# Aplica los cambios merging con tu compose actual.
+# =========================================================================
+
+services:
+
+  # ---------------------------------------------------------------
+  # 1. Postgres: agregar healthcheck + montar el initdb para crear
+  #    las BDs por servicio en el primer arranque.
+  # ---------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: rednorte-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - rednorte-network
+
+  # ---------------------------------------------------------------
+  # 2. HAPI FHIR: agregar healthcheck + esperar a Postgres listo.
+  # ---------------------------------------------------------------
+  hapi-fhir:
+    image: hapiproject/hapi:latest
+    container_name: rednorte-hapi-fhir
+    restart: on-failure
+    ports:
+      - "8085:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hapi_fhir
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+      - HAPI_FHIR_TESTER_HOME_SERVER_ADDRESS=http://localhost:8080/fhir
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/fhir/metadata >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    networks:
+      - rednorte-network
+
+  # ---------------------------------------------------------------
+  # 3. ms-usuarios-identidad: bloque completo, reemplaza el actual.
+  #    - Profile prod (Postgres + IdP en lugar de H2 + JWT propio).
+  #    - Variables de BD con convención Spring (SPRING_DATASOURCE_*).
+  #    - Depende de postgres y hapi-fhir con condition: service_healthy.
+  #    - Healthcheck contra /actuator/health.
+  # ---------------------------------------------------------------
+  ms-usuarios-identidad:
+    restart: always
+    build: ../SPS-ms-usuarios-identidad/ms-usuarios
+    image: ms-usuarios-identidad:local
+    container_name: ms-usuarios-identidad
+    ports:
+      - "8086:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_ms_usuarios
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      FHIR_SERVER_URL: http://hapi-fhir:8080/fhir
+      IDP_ISSUER_URI: ${IDP_ISSUER_URI}
+      IDP_JWK_SET_URI: ${IDP_JWK_SET_URI}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      hapi-fhir:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - rednorte-network
+
+  # ---------------------------------------------------------------
+  # 4. ms-api-gateway: agregar ms-usuarios-identidad a depends_on.
+  # ---------------------------------------------------------------
+  ms-api-gateway:
+    restart: always
+    build: ../SPS-rednorte-api-gateway
+    image: ms-api-gateway:local
+    container_name: ms-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      hapi-fhir:
+        condition: service_healthy
+      ms-usuarios-identidad:
+        condition: service_healthy
+      ms-agenda:
+        condition: service_started
+      ms-ficha-clinica:
+        condition: service_started
+      ms-red-centros:
+        condition: service_started
+      ms-urgencias-flujo:
+        condition: service_started
+    networks:
+      - rednorte-network

@@ -6,17 +6,27 @@ spring:
     password: ""
   jpa:
     hibernate:
-      ddl-auto: update
+      # Flyway crea/migra el esquema. Hibernate no toca DDL.
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
   h2:
     console:
       enabled: true
       path: /h2-console
 
 app:
+  cors:
+    # Permitido el frontend local en dev. En prod la lista se sobreescribe vía env.
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:5173
   security:
     jwt:
       # En dev firmamos con un par RSA generado en memoria al arranque.

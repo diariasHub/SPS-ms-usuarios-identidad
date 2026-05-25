@@ -28,7 +28,7 @@ public class CustomUserDetails implements UserDetails {
     private boolean enabled;
     private boolean mfaEnabled;
     private Instant lockedUntil;
-    private Integer practitionerId;
+    private String practitionerFhirId;
     private Collection<? extends GrantedAuthority> authorities;
 
     public static CustomUserDetails from(User user) {
@@ -43,7 +43,7 @@ public class CustomUserDetails implements UserDetails {
                 .enabled(user.isActive())
                 .mfaEnabled(user.isMfaEnabled())
                 .lockedUntil(user.getLockedUntil())
-                .practitionerId(user.getPractitionerId())
+                .practitionerFhirId(user.getPractitionerFhirId())
                 .authorities(grants)
                 .build();
     }
